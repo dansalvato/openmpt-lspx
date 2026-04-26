@@ -14,6 +14,8 @@
 
 #include "libopenmpt_impl.hpp"
 
+#include "libopenmpt.h"
+
 #include <algorithm>
 #include <iostream>
 #include <istream>
@@ -462,6 +464,9 @@ void module_impl::init_subsongs( subsongs_type & subsongs ) const {
 }
 bool module_impl::has_subsongs_inited() const {
 	return !m_subsongs.empty();
+}
+std::uint32_t module_impl::read_tick() const {
+	return m_sndFile->ReadOneTick();
 }
 void module_impl::ctor( const std::map< std::string, std::string > & ctls ) {
 	m_sndFile = std::make_unique<OpenMPT::CSoundFile>();
@@ -1373,6 +1378,70 @@ std::int32_t module_impl::get_current_row() const {
 }
 std::int32_t module_impl::get_current_playing_channels() const {
 	return m_sndFile->GetMixStat();
+}
+
+std::int32_t module_impl::get_current_channel_volume ( std::int32_t channel ) const {
+	if ( channel < 0 || channel >= m_sndFile->GetNumChannels() ) {
+		return 0;
+	}
+	return m_sndFile->m_PlayState.Chn[channel].nRealVolume;
+}
+
+LSPMeta module_impl::get_meta_lsp( ) const {
+	LSPMeta meta{};
+
+	meta.tempo = m_sndFile->GetMusicTempo().GetInt();
+	meta.speed = m_sndFile->GetMusicSpeed();
+	meta.restart_order = get_restart_order( get_selected_subsong() );
+	meta.restart_row = get_restart_row( get_selected_subsong() );
+
+	return meta;
+}
+
+LSPChannelData module_impl::get_current_channel_lsp( std::int32_t channel ) const {
+	LSPChannelData lsp{};
+	auto chn = m_sndFile->m_PlayState.Chn[channel];
+
+	lsp.cmd = chn.rowCommand.command;
+	lsp.param = chn.rowCommand.param;
+	lsp.sample_pos = chn.position.GetUInt();
+	lsp.sample_inc = chn.increment.ToDouble();
+	lsp.sample_vol = chn.nRealVolume;
+	lsp.sample_id = 0;
+	if (chn.pCurrentSample == nullptr)
+		return lsp;
+
+	// Sample is actively playing, get ID
+	const auto sample = chn.pModSample;
+	for (int i = 1; i <= m_sndFile->GetNumSamples(); i++) {
+		if (&m_sndFile->GetSample( i ) == sample) {
+			lsp.sample_id = i;
+			break;
+		}
+	}
+
+	return lsp;
+}
+
+LSPSample module_impl::get_sample_lsp( std::int32_t sample_num ) const {
+	LSPSample lsp_sample{};
+	const OpenMPT::ModSample &smp = m_sndFile->GetSample( sample_num );
+
+	lsp_sample.name = m_sndFile->GetSampleName( sample_num );
+	lsp_sample.flags = smp.uFlags.GetRaw();
+	lsp_sample.rate = smp.GetSampleRate( m_sndFile->GetType() );
+	lsp_sample.loop_start = smp.nLoopStart;
+	lsp_sample.loop_end = smp.nLoopEnd;
+	lsp_sample.sustain_start = smp.nSustainStart;
+	lsp_sample.sustain_end = smp.nSustainEnd;
+	lsp_sample.data_length = smp.GetSampleSizeInBytes();
+	lsp_sample.data = smp.pData.pSample;
+
+	return lsp_sample;
+}
+
+uint32_t module_impl::get_current_samples_per_tick_lsp() const {
+	return m_sndFile->m_PlayState.m_nSamplesPerTick;
 }
 
 float module_impl::get_current_channel_vu_mono( std::int32_t channel ) const {

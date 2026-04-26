@@ -1520,6 +1520,35 @@ int openmpt_module_ctl_set_text( openmpt_module * mod, const char * ctl, const c
 	return 0;
 }
 
+uint32_t openmpt_module_play_tick( openmpt_module * mod ) {
+	return mod->impl->read_tick();
+}
+uint32_t openmpt_module_get_current_channel_volume( openmpt_module * mod, const int32_t channel ) {
+	try {
+		openmpt::interface::check_soundfile( mod );
+		return mod->impl->get_current_channel_volume( channel );
+	} catch ( ... ) {
+		openmpt::report_exception( __func__, mod );
+	}
+	return 0;
+}
+
+uint32_t openmpt_module_get_current_samples_per_tick( openmpt_module * mod ) {
+	return mod->impl->get_current_samples_per_tick_lsp();
+}
+
+struct LSPMeta openmpt_module_get_meta_lsp( openmpt_module * mod ) {
+	return mod->impl->get_meta_lsp();
+}
+
+struct LSPChannelData openmpt_module_get_current_channel_lsp( openmpt_module * mod, const int32_t channel ) {
+	return mod->impl->get_current_channel_lsp( channel );
+}
+
+struct LSPSample openmpt_module_get_sample_lsp( openmpt_module * mod, const int32_t sample_num ) {
+	return mod->impl->get_sample_lsp( sample_num );
+}
+
 openmpt_module_ext * openmpt_module_ext_create( openmpt_stream_callbacks stream_callbacks, void * stream, openmpt_log_func logfunc, void * loguser, openmpt_error_func errfunc, void * erruser, int * error, const char * * error_message, const openmpt_module_initial_ctl * ctls ) {
 	try {
 		openmpt_module_ext * mod_ext = (openmpt_module_ext*)std::calloc( 1, sizeof( openmpt_module_ext ) );
