@@ -10,6 +10,7 @@
 #ifndef LIBOPENMPT_IMPL_HPP
 #define LIBOPENMPT_IMPL_HPP
 
+#include "libopenmpt.h"
 #include "libopenmpt_internal.h"
 #include "libopenmpt.hpp"
 
@@ -154,6 +155,7 @@ protected:
 public:
 	void PushToCSoundFileLog( const std::string & text ) const;
 	void PushToCSoundFileLog( int loglevel, const std::string & text ) const;
+	std::uint32_t read_tick() const;
 protected:
 	std::string mod_string_to_utf8( const std::string & encoded ) const;
 	void apply_mixer_settings( std::int32_t samplerate, int channels );
@@ -234,6 +236,11 @@ public:
 	std::int32_t get_current_pattern() const;
 	std::int32_t get_current_row() const;
 	std::int32_t get_current_playing_channels() const;
+	std::int32_t get_current_channel_volume( std::int32_t channel ) const;
+	LSPMeta get_meta_lsp() const;
+	LSPChannelData get_current_channel_lsp( std::int32_t channel ) const;
+	LSPSample get_sample_lsp( std::int32_t sample_num ) const;
+	uint32_t get_current_samples_per_tick_lsp() const;
 	float get_current_channel_vu_mono( std::int32_t channel ) const;
 	float get_current_channel_vu_left( std::int32_t channel ) const;
 	float get_current_channel_vu_right( std::int32_t channel ) const;

@@ -1634,6 +1634,47 @@ LIBOPENMPT_API int openmpt_module_ctl_set_floatingpoint( openmpt_module * mod, c
  */
 LIBOPENMPT_API int openmpt_module_ctl_set_text( openmpt_module * mod, const char * ctl, const char * value );
 
+LIBOPENMPT_API uint32_t openmpt_module_play_tick( openmpt_module * mod );
+
+LIBOPENMPT_API uint32_t openmpt_module_get_current_channel_volume( openmpt_module * mod, int32_t channel );
+
+LIBOPENMPT_API uint32_t openmpt_module_get_current_samples_per_tick( openmpt_module * mod );
+
+struct LSPMeta
+{
+	uint32_t tempo;
+	uint32_t speed;
+	uint32_t restart_order;
+	uint32_t restart_row;
+};
+
+struct LSPChannelData
+{
+	uint32_t sample_id;
+	uint32_t sample_pos;
+	double sample_inc;
+	uint32_t sample_vol;
+	uint32_t cmd;
+	uint32_t param;
+};
+
+struct LSPSample
+{
+	const char *name;
+	uint32_t flags;
+	uint32_t rate;
+	uint32_t loop_start;
+	uint32_t loop_end;
+	uint32_t sustain_start;
+	uint32_t sustain_end;
+	uint32_t data_length;
+	void *data;
+};
+
+LIBOPENMPT_API struct LSPMeta openmpt_module_get_meta_lsp( openmpt_module * mod );
+LIBOPENMPT_API struct LSPChannelData openmpt_module_get_current_channel_lsp( openmpt_module * mod, int32_t channel );
+LIBOPENMPT_API struct LSPSample openmpt_module_get_sample_lsp( openmpt_module * mod, int32_t sample_num );
+
 /* remember to add new functions to both C and C++ interfaces and to increase OPENMPT_API_VERSION_MINOR */
 
 #ifdef __cplusplus
